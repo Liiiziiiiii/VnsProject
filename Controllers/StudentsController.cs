@@ -1,7 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Vns.Context;
-using Vns.Model;
+using Vns.Model.StudentModel;
 using Vns.Service.Student;
 
 namespace Vns.Controllers
@@ -12,6 +18,8 @@ namespace Vns.Controllers
     {
         private readonly StudentContext _context;
         private readonly IStudentService _studentService;
+        private readonly IConfiguration _configuration;
+        //private readonly ILogger<GlobalExceptionHandler> _logger;
 
 
         public StudentsController(StudentContext context, IStudentService stusentService)
@@ -21,22 +29,21 @@ namespace Vns.Controllers
         }
 
         // GET: api/Students
-        [HttpGet]
+        [HttpGet, Authorize(Roles = "Student")]
         public async Task<ActionResult<IEnumerable<Student>>> GetStudents()
         {
             return await _context.Students.ToListAsync();
         }
 
         // GET: api/Students/5
-        [HttpGet("{id}")]
+        [HttpGet("{id}"), Authorize(Roles = "Student")]
         public async Task<ActionResult<Student>> GetStudent(int id)
         {
             return await _studentService.GetById(id);
         }
 
         // PUT: api/Students/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        [HttpPut("{id}"), Authorize(Roles = "Student")]
         public async Task<IActionResult> PutStudent(int id, Student student)
         {
             try
@@ -51,7 +58,8 @@ namespace Vns.Controllers
                 }
                 else
                 {
-                    throw;
+                       
+                   
                 }
             }
 
@@ -59,14 +67,14 @@ namespace Vns.Controllers
         }
 
         // POST: api/Students
-        [HttpPost]
+        [HttpPost, Authorize(Roles = "Student")]
         public async Task<ActionResult<Student>> PostStudent(Student student)
         {
             return await _studentService.CreateAsync(student);
         }
 
         // DELETE: api/Students/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), Authorize(Roles = "Student")]
         public async Task<IActionResult> DeleteStudent(int id)
         {
             await _studentService.DeleteAsync(id);
@@ -77,33 +85,5 @@ namespace Vns.Controllers
         private bool StudentExists(int id) => _context.Students.Any(e => e.Id == id);
 
 
-        [HttpPost("register")]
-        public async Task<ActionResult<Student>> Register(StudentDto request)
-        {
-            try
-            {
-                return await _studentService.Register(request);
-
-                //return CreatedAtAction(nameof(GetStudent), new { id = user.Id }, user);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-
-        [HttpPost("login")]
-        public ActionResult<Student> Login(UserLoginData request)
-        {
-            var user = _context.Students.FirstOrDefault(u => u.Name == request.Name);
-
-            if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
-            {
-                return BadRequest("Wrong password.");
-            }
-
-            return Ok(user.Id);
-        }
     }
 }

@@ -1,14 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Vns.Model;
 
 namespace Vns.Service.Student;
-    public interface IStudentService
+
+public interface IStudentService
     {
-        Task<Student.Student> GetById(int id);
-        Task<Student> CreateAsync(Student student);
-        Task<Student> UpdateAsync(int id, Student student);
-        Task DeleteAsync(int id);
-        Task<Student> Register(StudentDto request);
-        Task<bool> Login(UserLoginData request);
+        Task<Model.StudentModel.Student> GetById(int id);
+        Task<Model.StudentModel.Student> CreateAsync(Model.StudentModel.Student student);
+        Task<Model.StudentModel.Student> UpdateAsync(int id, Model.StudentModel.Student student);
+        Task<bool> DeleteAsync(int id);
+        
     }
-}
